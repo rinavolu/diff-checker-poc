@@ -1,9 +1,9 @@
-package org.diffchecker2.diffcheckerpoc;
+package org.diffchecker.diffcheckerpoc;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
-public class HelloController {
+public class DiffCheckerController {
     @FXML
     private Label welcomeText;
 
