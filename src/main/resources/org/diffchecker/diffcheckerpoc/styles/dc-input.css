@@ -1,0 +1,9 @@
+.dc_input_container {
+    -fx-background-color: #888888;
+}
+
+.dc_text_area {
+    -fx-background-color: #EEEEEE;
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+}
