@@ -10,7 +10,7 @@ import java.io.IOException;
 public class DiffCheckerApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(DiffCheckerApplication.class.getResource("dc-input-scene.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("dc-input-scene.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         stage.setTitle("Diff Checker Poc");
         stage.setScene(scene);
