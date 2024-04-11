@@ -1,0 +1,28 @@
+.dc_input_container {
+    -fx-background-color: #888888;
+}
+
+.dc_text_area {
+    -fx-background-color: #EEEEEE;
+    -fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;
+}
+
+.new-line {
+    -rtfx-background-color: #8cea8c; /* Light green background */
+}
+
+.old-line {
+    -rtfx-background-color: #e37d7d; /* Light red background */
+    /*-rtfx-background-color: yellow;*/
+}
+
+.old-line-highlight {
+    -rtfx-background-color: #e13d3d; /* Light red background */
+    /*-rtfx-background-color: yellow;*/
+}
+
+.new-line-highlight {
+    -rtfx-background-color: #44d315; /* Light red background */
+    /*-rtfx-background-color: yellow;*/
+}

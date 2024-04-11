@@ -29,6 +29,8 @@ public class DCInputController implements Initializable {
     private void initializeTextArea(){
         text_area_alpha.clear();
         text_area_beta.clear();
+        text_area_alpha.setWrapText(true);
+        text_area_beta.setWrapText(true);
 
         text_area_alpha.setParagraphGraphicFactory(LineNumberFactory.get(text_area_alpha));
         text_area_beta.setParagraphGraphicFactory(LineNumberFactory.get(text_area_beta));
