@@ -12,17 +12,24 @@
     -rtfx-background-color: #8cea8c; /* Light green background */
 }
 
-.old-line {
-    -rtfx-background-color: #e37d7d; /* Light red background */
+.styled-text-area .old-line {
+    -fx-fill: #e37d7d; /* Light red background */
     /*-rtfx-background-color: yellow;*/
 }
 
-.old-line-highlight {
-    -rtfx-background-color: #e13d3d; /* Light red background */
-    /*-rtfx-background-color: yellow;*/
+.old-line-highlight{
+    -rtfx-background-color: #e13d3d;
+}
+
+.old-line-highlight .lineNumber {
+    -fx-text-fill: red;
 }
 
 .new-line-highlight {
     -rtfx-background-color: #44d315; /* Light red background */
     /*-rtfx-background-color: yellow;*/
+}
+
+.no-diff-bg {
+    -fx-background-color: #EEEEEE;
 }

@@ -7,6 +7,7 @@ module org.diffchecker2.diffcheckerpoc {
     requires reactfx;
 
 
+
     opens org.diffchecker.diffcheckerpoc to javafx.fxml;
     exports org.diffchecker.diffcheckerpoc;
     exports org.diffchecker.diffcheckerpoc.controllers;
