@@ -188,11 +188,11 @@ public class DCOutputController implements Initializable {
             }
             return;
         }
-        for(int i=1; i <= diffLineNumber.getLinesCount();i++){
+        for(int i=0; i < diffLineNumber.getLinesCount();i++){
             if(isAlpha)
-                diffLineNumbersAlpha.add(paraNumber);
+                diffLineNumbersAlpha.add(paraNumber+i);
             else
-                diffLineNumbersBeta.add(paraNumber);
+                diffLineNumbersBeta.add(paraNumber+i);
         }
     }
 
