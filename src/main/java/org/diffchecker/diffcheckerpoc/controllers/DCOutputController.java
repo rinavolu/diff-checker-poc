@@ -29,9 +29,6 @@ public class DCOutputController implements Initializable {
     public StyleClassedTextArea text_area_output_alpha;
     public StyleClassedTextArea text_area_output_beta;
 
-    public List<DiffLineNumber> line_number_changes_alpha;
-    public List<DiffLineNumber> line_number_changes_beta;
-
     private ObservableList<Integer> diffLineNumbersAlpha;
     private ObservableList<Integer> diffLineNumbersBeta;
 
@@ -51,9 +48,6 @@ public class DCOutputController implements Initializable {
         text_area_output_alpha.setWrapText(true);
         text_area_output_beta.setWrapText(true);
 
-        this.line_number_changes_alpha= new ArrayList<>();
-        this.line_number_changes_beta = new ArrayList<>();
-
         this.diffLineNumbersAlpha = FXCollections.observableArrayList();
         this.diffLineNumbersBeta = FXCollections.observableArrayList();
 
@@ -61,29 +55,10 @@ public class DCOutputController implements Initializable {
         this.diffLineNumbersPropertyBeta = new SimpleListProperty<Integer>(diffLineNumbersBeta);
 
         close_stage.setOnAction(actionEvent -> {
-            printLineNumbers();
             Stage stage =(Stage) close_stage.getScene().getWindow();
             stage.close();
         });
         initializeTextArea();
-
-    }
-
-    private void printLineNumbers(){
-        System.out.println("Alpha Line Number Map: ");
-        for(DiffLineNumber diffLineNumber: this.line_number_changes_alpha){
-            System.out.println("Line Number : "+diffLineNumber.getParagraphNumber()+
-                    " Subsequent Numbers : "+getStringLineNumbers(diffLineNumber));
-
-        }
-
-        System.out.println("Beta Line Number Map: ");
-        for(DiffLineNumber diffLineNumber: this.line_number_changes_beta){
-            System.out.println("Line Number : "+diffLineNumber.getParagraphNumber()+
-                    " Subsequent Numbers : "+getStringLineNumbers(diffLineNumber));
-
-        }
-
 
     }
 
@@ -155,7 +130,6 @@ public class DCOutputController implements Initializable {
                 int alpha_paragraph_line_number = getLineNumberForIndex(text_alpha, delta.getSource().getPosition());
                 int alpha_new_lines_count = getLinesCount(delta.getSource().getLines());
                 DiffLineNumber alphaDiffLineNumber = new DiffLineNumber(alpha_paragraph_line_number, alpha_new_lines_count);
-                this.line_number_changes_alpha.add(alphaDiffLineNumber);
 
                 addDiffLineNumbers(alphaDiffLineNumber, true);
             }
@@ -165,7 +139,6 @@ public class DCOutputController implements Initializable {
                 int beta_paragraph_line_number = getLineNumberForIndex(text_beta, delta.getTarget().getPosition());
                 int beta_new_lines_count = getLinesCount(delta.getTarget().getLines());
                 DiffLineNumber betaDiffLineNumber = new DiffLineNumber(beta_paragraph_line_number, beta_new_lines_count);
-                this.line_number_changes_beta.add(betaDiffLineNumber);
 
                 addDiffLineNumbers(betaDiffLineNumber, false);
             }
