@@ -3,20 +3,42 @@ package org.diffchecker.diffcheckerpoc.controllers;
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.AbstractDelta;
 import com.github.difflib.patch.Patch;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import org.diffchecker.diffcheckerpoc.DiffLineNumber;
+import org.diffchecker.diffcheckerpoc.Factory.DiffHighlightFactoryAlpha;
+import org.diffchecker.diffcheckerpoc.Factory.DiffHighlightFactoryBeta;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.StyleClassedTextArea;
 
 import java.net.URL;
 import java.util.*;
+import java.util.function.IntFunction;
 
 public class DCOutputController implements Initializable {
 
 
     public StyleClassedTextArea text_area_output_alpha;
     public StyleClassedTextArea text_area_output_beta;
+
+    public List<DiffLineNumber> line_number_changes_alpha;
+    public List<DiffLineNumber> line_number_changes_beta;
+
+    private ObservableList<Integer> diffLineNumbersAlpha;
+    private ObservableList<Integer> diffLineNumbersBeta;
+
+    private ListProperty<Integer> diffLineNumbersPropertyAlpha;
+
+    private ListProperty<Integer> diffLineNumbersPropertyBeta;
+
     public Button close_stage;
 
     @Override
@@ -29,7 +51,17 @@ public class DCOutputController implements Initializable {
         text_area_output_alpha.setWrapText(true);
         text_area_output_beta.setWrapText(true);
 
+        this.line_number_changes_alpha= new ArrayList<>();
+        this.line_number_changes_beta = new ArrayList<>();
+
+        this.diffLineNumbersAlpha = FXCollections.observableArrayList();
+        this.diffLineNumbersBeta = FXCollections.observableArrayList();
+
+        this.diffLineNumbersPropertyAlpha = new SimpleListProperty<Integer>(diffLineNumbersAlpha);
+        this.diffLineNumbersPropertyBeta = new SimpleListProperty<Integer>(diffLineNumbersBeta);
+
         close_stage.setOnAction(actionEvent -> {
+            printLineNumbers();
             Stage stage =(Stage) close_stage.getScene().getWindow();
             stage.close();
         });
@@ -37,9 +69,59 @@ public class DCOutputController implements Initializable {
 
     }
 
+    private void printLineNumbers(){
+        System.out.println("Alpha Line Number Map: ");
+        for(DiffLineNumber diffLineNumber: this.line_number_changes_alpha){
+            System.out.println("Line Number : "+diffLineNumber.getParagraphNumber()+
+                    " Subsequent Numbers : "+getStringLineNumbers(diffLineNumber));
+
+        }
+
+        System.out.println("Beta Line Number Map: ");
+        for(DiffLineNumber diffLineNumber: this.line_number_changes_beta){
+            System.out.println("Line Number : "+diffLineNumber.getParagraphNumber()+
+                    " Subsequent Numbers : "+getStringLineNumbers(diffLineNumber));
+
+        }
+
+
+    }
+
+    private String getStringLineNumbers(DiffLineNumber diffLineNumber){
+        StringBuilder str= new StringBuilder();
+        for(int i=diffLineNumber.getParagraphNumber();i <= diffLineNumber.getLinesCount()+diffLineNumber.getParagraphNumber();i++){
+            str.append(String.valueOf(i));
+        }
+        return str.toString();
+    }
+
     private void initializeTextArea(){
-        text_area_output_alpha.setParagraphGraphicFactory(LineNumberFactory.get(text_area_output_alpha));
-        text_area_output_beta.setParagraphGraphicFactory(LineNumberFactory.get(text_area_output_beta));
+        //Alpha
+        IntFunction<Node> numberFactoryAlpha = LineNumberFactory.get(text_area_output_alpha);
+        IntFunction<Node> arrowFactoryAlpha = new DiffHighlightFactoryAlpha(diffLineNumbersPropertyAlpha);
+        IntFunction<Node> graphicFactoryAlpha = line -> {
+            HBox hbox = new HBox(
+                    numberFactoryAlpha.apply(line),
+                    arrowFactoryAlpha.apply(line));
+            hbox.setStyle("-fx-background-color: #dedbd5;");
+            hbox.setAlignment(Pos.CENTER_LEFT);
+            return hbox;
+        };
+
+        text_area_output_alpha.setParagraphGraphicFactory(graphicFactoryAlpha);
+
+        //Beta
+        IntFunction<Node> numberFactoryBeta = LineNumberFactory.get(text_area_output_beta);
+        IntFunction<Node> arrowFactoryBeta = new DiffHighlightFactoryBeta(diffLineNumbersPropertyBeta);
+        IntFunction<Node> graphicFactoryBeta = line -> {
+            HBox hbox = new HBox(
+                    numberFactoryBeta.apply(line),
+                    arrowFactoryBeta.apply(line));
+            hbox.setStyle("-fx-background-color: #dedbd5;");
+            hbox.setAlignment(Pos.CENTER_LEFT);
+            return hbox;
+        };
+        text_area_output_beta.setParagraphGraphicFactory(graphicFactoryBeta);
     }
 
 
@@ -65,7 +147,28 @@ public class DCOutputController implements Initializable {
         int startPositionBeta = 0;
 
         //Fill text area Alpha
-        for(AbstractDelta<String> delta:deltas){
+        for(AbstractDelta<String> delta:deltas) {
+
+            //Add paragraph numbers to list
+            //alpha
+            if (delta.getSource().getPosition() < text_alpha.length()) {
+                int alpha_paragraph_line_number = getLineNumberForIndex(text_alpha, delta.getSource().getPosition());
+                int alpha_new_lines_count = getLinesCount(delta.getSource().getLines());
+                DiffLineNumber alphaDiffLineNumber = new DiffLineNumber(alpha_paragraph_line_number, alpha_new_lines_count);
+                this.line_number_changes_alpha.add(alphaDiffLineNumber);
+
+                addDiffLineNumbers(alphaDiffLineNumber, true);
+            }
+
+            //beta
+            if(delta.getTarget().getPosition() < text_beta.length()) {
+                int beta_paragraph_line_number = getLineNumberForIndex(text_beta, delta.getTarget().getPosition());
+                int beta_new_lines_count = getLinesCount(delta.getTarget().getLines());
+                DiffLineNumber betaDiffLineNumber = new DiffLineNumber(beta_paragraph_line_number, beta_new_lines_count);
+                this.line_number_changes_beta.add(betaDiffLineNumber);
+
+                addDiffLineNumbers(betaDiffLineNumber, false);
+            }
 
             //Alpha
             int startLineAlpha = delta.getSource().getPosition();
@@ -99,6 +202,49 @@ public class DCOutputController implements Initializable {
         //Copy remaining text to beta
         copyText("BETA",text_area_input_beta,startPositionBeta, text_beta.length());
 
+    }
+
+    private void addDiffLineNumbers(DiffLineNumber diffLineNumber,Boolean isAlpha){
+        int paraNumber = diffLineNumber.getParagraphNumber();
+        int linesCount = diffLineNumber.getLinesCount();
+        if(linesCount==0){
+            if(isAlpha){
+                diffLineNumbersAlpha.add(paraNumber);
+            }else{
+                diffLineNumbersBeta.add(paraNumber);
+            }
+            return;
+        }
+        for(int i=1; i <= diffLineNumber.getLinesCount();i++){
+            if(isAlpha)
+                diffLineNumbersAlpha.add(paraNumber);
+            else
+                diffLineNumbersBeta.add(paraNumber);
+        }
+    }
+
+    public int getLineNumberForIndex(String text, int index) {
+        int lineNumber = 1; // Assuming lines are numbered starting from 1
+
+        // Extract the substring up to the given index
+        String substring = text.substring(0, index+1);
+
+        // Count the number of newline characters in the substring
+        for (int i = 0; i < substring.length(); i++) {
+            if (substring.charAt(i) == '\n') {
+                lineNumber++;
+            }
+        }
+
+         return lineNumber;
+    }
+
+    public Integer getLinesCount(List<String> lines){
+        Integer count = 0;
+        for (String i : lines) {
+            if (i.contains("\n")) count++;
+        }
+        return count;
     }
 
     public void copyText(String textAreaType, StyleClassedTextArea text_area_input,
