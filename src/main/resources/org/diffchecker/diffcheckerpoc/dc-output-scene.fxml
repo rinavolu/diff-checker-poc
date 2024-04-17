@@ -22,5 +22,6 @@
 
 
    <Button fx:id="close_stage" layoutX="750.0" layoutY="80.0" mnemonicParsing="false" text="Close" />
+   <Button fx:id="traverse_to_next_delta_btn" layoutX="734.0" layoutY="40.0" mnemonicParsing="false" text="Go to Delta" />
 
 </AnchorPane>

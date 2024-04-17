@@ -16,8 +16,11 @@ import javafx.stage.Stage;
 import org.diffchecker.diffcheckerpoc.DiffLineNumber;
 import org.diffchecker.diffcheckerpoc.Factory.DiffHighlightFactoryAlpha;
 import org.diffchecker.diffcheckerpoc.Factory.DiffHighlightFactoryBeta;
+import org.diffchecker.diffcheckerpoc.LineNumberRef;
+import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.StyleClassedTextArea;
+import org.reactfx.value.Var;
 
 import java.net.URL;
 import java.util.*;
@@ -28,6 +31,9 @@ public class DCOutputController implements Initializable {
 
     public StyleClassedTextArea text_area_output_alpha;
     public StyleClassedTextArea text_area_output_beta;
+    public Button traverse_to_next_delta_btn;
+    public VirtualizedScrollPane scroll_pane_beta;
+    public VirtualizedScrollPane scroll_pane_alpha;
 
     private ObservableList<Integer> diffLineNumbersAlpha;
     private ObservableList<Integer> diffLineNumbersBeta;
@@ -37,6 +43,8 @@ public class DCOutputController implements Initializable {
     private ListProperty<Integer> diffLineNumbersPropertyBeta;
 
     public Button close_stage;
+    private List<LineNumberRef> lineNumberRefs;
+    private Iterator<LineNumberRef> lineNumberRefIterator;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -58,16 +66,10 @@ public class DCOutputController implements Initializable {
             Stage stage =(Stage) close_stage.getScene().getWindow();
             stage.close();
         });
+        traverse_to_next_delta_btn.setOnAction(actionEvent -> travelThroughDeltas());
+        lineNumberRefs= new ArrayList<>();
         initializeTextArea();
-
-    }
-
-    private String getStringLineNumbers(DiffLineNumber diffLineNumber){
-        StringBuilder str= new StringBuilder();
-        for(int i=diffLineNumber.getParagraphNumber();i <= diffLineNumber.getLinesCount()+diffLineNumber.getParagraphNumber();i++){
-            str.append(String.valueOf(i));
-        }
-        return str.toString();
+        //addDualScrolls();
     }
 
     private void initializeTextArea(){
@@ -126,8 +128,13 @@ public class DCOutputController implements Initializable {
 
             //Add paragraph numbers to list
             //alpha
+            boolean isAlphaLineNumberCaptured = false;
+            boolean isBetaLineNumberCaptured = false;
+
+            int alpha_paragraph_line_number =-1;
+            int beta_paragraph_line_number =-1;
             if (delta.getSource().getPosition() < text_alpha.length()) {
-                int alpha_paragraph_line_number = getLineNumberForIndex(text_alpha, delta.getSource().getPosition());
+                alpha_paragraph_line_number = getLineNumberForIndex(text_alpha, delta.getSource().getPosition());
                 int alpha_new_lines_count = getLinesCount(delta.getSource().getLines());
                 DiffLineNumber alphaDiffLineNumber = new DiffLineNumber(alpha_paragraph_line_number, alpha_new_lines_count);
 
@@ -136,11 +143,25 @@ public class DCOutputController implements Initializable {
 
             //beta
             if(delta.getTarget().getPosition() < text_beta.length()) {
-                int beta_paragraph_line_number = getLineNumberForIndex(text_beta, delta.getTarget().getPosition());
+                beta_paragraph_line_number = getLineNumberForIndex(text_beta, delta.getTarget().getPosition());
                 int beta_new_lines_count = getLinesCount(delta.getTarget().getLines());
                 DiffLineNumber betaDiffLineNumber = new DiffLineNumber(beta_paragraph_line_number, beta_new_lines_count);
 
                 addDiffLineNumbers(betaDiffLineNumber, false);
+            }
+
+            if(alpha_paragraph_line_number!=-1 || beta_paragraph_line_number!=-1){
+                String str="";
+                if(alpha_paragraph_line_number==-1&&beta_paragraph_line_number!=-1){
+                    str="BETA";
+                }
+                if (alpha_paragraph_line_number!=-1&&beta_paragraph_line_number==-1) {
+                    str="ALPHA";
+                }
+                if (alpha_paragraph_line_number!=-1&&beta_paragraph_line_number!=-1){
+                    str= "ALPHA+BETA";
+                }
+                lineNumberRefs.add(new LineNumberRef(str,alpha_paragraph_line_number,beta_paragraph_line_number));
             }
 
             //Alpha
@@ -174,7 +195,7 @@ public class DCOutputController implements Initializable {
 
         //Copy remaining text to beta
         copyText("BETA",text_area_input_beta,startPositionBeta, text_beta.length());
-
+        lineNumberRefIterator = lineNumberRefs.iterator();
     }
 
     private void addDiffLineNumbers(DiffLineNumber diffLineNumber,Boolean isAlpha){
@@ -262,58 +283,45 @@ public class DCOutputController implements Initializable {
         }
 
     }
-    private void computeDiff(StyleClassedTextArea text_area_input_alpha,
-                             StyleClassedTextArea text_area_input_beta){
-        int totalParagraphs = text_area_input_alpha.getParagraphs().size();
-        for(int i=0;i<totalParagraphs;i++){
-            String text_alpha = text_area_input_alpha.getText(i);
-            String text_beta = text_area_input_beta.getText(i);
-            List<AbstractDelta<String>> deltas = getDeltas(text_alpha,text_beta);
-            List<Integer> diffIndexesAlpha = new ArrayList<>();
-            List<Integer> diffIndexesBeta = new ArrayList<>();
-            for (AbstractDelta<String> delta : deltas) {
-                int startIndexAlpha = delta.getSource().getPosition();
-                int endIndexAlpha = delta.getSource().last();
-                for(int j=startIndexAlpha;j<=endIndexAlpha;j++){
-                    diffIndexesAlpha.add(j);
-                }
 
-                int startIndexBeta = delta.getTarget().getPosition();
-                int endIndexBeta = delta.getTarget().last();
-                for(int j=startIndexBeta;j<=endIndexBeta;j++){
-                    diffIndexesBeta.add(j);
-                }
-            }
-
-            //AppendText
-            for(int index=0;index<text_alpha.length();index++){
-                char ch = text_alpha.charAt(index);
-                if(diffIndexesAlpha.contains(index)){
-                    text_area_output_alpha.append(String.valueOf(ch),"old-line-highlight");
-                }else{
-                    text_area_output_alpha.append(String.valueOf(ch),"old-line");
-                }
-            }
-
-            for(int index=0;index<text_beta.length();index++){
-                char ch = text_beta.charAt(index);
-                if(diffIndexesBeta.contains(index)){
-                    text_area_output_beta.append(String.valueOf(ch),"new-line-highlight");
-                }else{
-                    text_area_output_beta.append(String.valueOf(ch),"new-line");
-                }
-            }
-
-
-
+    private void travelThroughDeltas(){
+        if(lineNumberRefIterator.hasNext()){
+            LineNumberRef ref = lineNumberRefIterator.next();
+            travelToLineNumbers(ref.getAlphaLineNumber(), ref.getBetaLineNumber());
         }
-
     }
 
-    private List<AbstractDelta<String>> getDeltas(String text_alpha, String text_beta){
-        Patch<String> diff = DiffUtils.diff(Arrays.asList(text_alpha.split("")), Arrays.asList(text_beta.split("")));
-        return diff.getDeltas();
+    private void travelToLineNumbers(Integer alpha_line_number, Integer beta_line_number){
+        System.out.println("Travel to Line Map Alpha:"+alpha_line_number+" Beta:"+beta_line_number);
+        if(alpha_line_number!=-1){
+            text_area_output_alpha.showParagraphAtCenter(alpha_line_number);
+        }
+        if(beta_line_number!=-1){
+            text_area_output_beta.showParagraphAtCenter(beta_line_number);
+        }
+        if(!lineNumberRefIterator.hasNext()){
+            lineNumberRefIterator = lineNumberRefs.iterator();
+        }
     }
 
+    private void addDualScrolls(){
+        Var<Double> alphaScrollY = scroll_pane_alpha.estimatedScrollYProperty();
+        Var<Double> betaScrollY = scroll_pane_beta.estimatedScrollYProperty();
+        boolean[] isBusy = new boolean[2];
+        final int LEFT = 0, RIGHT = 1;
 
+        alphaScrollY.addListener( (ob,ov,nv) ->
+        {
+            isBusy[LEFT] = true;
+            if ( ! isBusy[RIGHT] ) betaScrollY.setValue( nv );
+            isBusy[LEFT] = false;
+        });
+
+        betaScrollY.addListener( (ob,ov,nv) ->
+        {
+            isBusy[RIGHT] = true;
+            if ( ! isBusy[LEFT] ) alphaScrollY.setValue( nv );
+            isBusy[RIGHT] = false;
+        });
+    }
 }

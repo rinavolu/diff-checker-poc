@@ -9,6 +9,7 @@ import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.StyleClassedTextArea;
+import org.reactfx.value.Var;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,6 +21,8 @@ public class DCInputController implements Initializable {
     public StyleClassedTextArea text_area_alpha;
     public StyleClassedTextArea text_area_beta;
     public Button diff_check_button;
+    public VirtualizedScrollPane scroll_pane_alpha;
+    public VirtualizedScrollPane scroll_pane_beta;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -42,6 +45,7 @@ public class DCInputController implements Initializable {
                 throw new RuntimeException(e);
             }
         });
+        //addDualScrolls();
     }
 
 
@@ -55,5 +59,26 @@ public class DCInputController implements Initializable {
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
+    }
+
+    private void addDualScrolls(){
+        Var<Double> alphaScrollY = scroll_pane_alpha.estimatedScrollYProperty();
+        Var<Double> betaScrollY = scroll_pane_beta.estimatedScrollYProperty();
+        boolean[] isBusy = new boolean[2];
+        final int LEFT = 0, RIGHT = 1;
+
+        alphaScrollY.addListener( (ob,ov,nv) ->
+        {
+            isBusy[LEFT] = true;
+            if ( ! isBusy[RIGHT] ) betaScrollY.setValue( nv );
+            isBusy[LEFT] = false;
+        });
+
+        betaScrollY.addListener( (ob,ov,nv) ->
+        {
+            isBusy[RIGHT] = true;
+            if ( ! isBusy[LEFT] ) alphaScrollY.setValue( nv );
+            isBusy[RIGHT] = false;
+        });
     }
 }
