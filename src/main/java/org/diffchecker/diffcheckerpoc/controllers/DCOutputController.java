@@ -11,6 +11,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.diffchecker.diffcheckerpoc.DiffLineNumber;
@@ -34,6 +35,10 @@ public class DCOutputController implements Initializable {
     public Button traverse_to_next_delta_btn;
     public VirtualizedScrollPane scroll_pane_beta;
     public VirtualizedScrollPane scroll_pane_alpha;
+    public Label total_characters_alpha;
+    public Label total_lines_alpha;
+    public Label total_characters_beta;
+    public Label total_lines_beta;
 
     private ObservableList<Integer> diffLineNumbersAlpha;
     private ObservableList<Integer> diffLineNumbersBeta;
@@ -103,10 +108,18 @@ public class DCOutputController implements Initializable {
 
 
     public void copyTextDetails(StyleClassedTextArea text_area_input_alpha,
-                                StyleClassedTextArea text_area_input_beta){
+                                StyleClassedTextArea text_area_input_beta,
+                                String total_characters_alpha,
+                                String total_lines_alpha,
+                                String total_characters_beta,
+                                String total_lines_beta){
         //Compute Diff
 
         //computeDiff(text_area_input_alpha,text_area_input_beta);
+        this.total_characters_alpha.setText(total_characters_alpha);
+        this.total_lines_alpha.setText(total_lines_alpha);
+        this.total_lines_beta.setText(total_lines_beta);
+        this.total_characters_beta.setText(total_characters_beta);
 
         newComputeDiff(text_area_input_alpha,text_area_input_beta);
     }

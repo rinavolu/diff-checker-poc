@@ -4,7 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -23,6 +23,10 @@ public class DCInputController implements Initializable {
     public Button diff_check_button;
     public VirtualizedScrollPane scroll_pane_alpha;
     public VirtualizedScrollPane scroll_pane_beta;
+    public Label total_characters_alpha;
+    public Label total_lines_alpha;
+    public Label total_characters_beta;
+    public Label total_lines_beta;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -37,6 +41,18 @@ public class DCInputController implements Initializable {
 
         text_area_alpha.setParagraphGraphicFactory(LineNumberFactory.get(text_area_alpha));
         text_area_beta.setParagraphGraphicFactory(LineNumberFactory.get(text_area_beta));
+
+        text_area_alpha.beingUpdatedProperty().addListener(observable -> {
+            total_lines_alpha.setText(String.valueOf(text_area_alpha.getParagraphs().size()));
+            total_characters_alpha.setText(String.valueOf(text_area_alpha.getText().length()));
+        });
+
+        text_area_beta.beingUpdatedProperty().addListener(observable -> {
+            total_lines_beta.setText(String.valueOf(text_area_beta.getParagraphs().size()));
+            total_characters_beta.setText(String.valueOf(text_area_beta.getText().length()));
+        });
+
+
 
         diff_check_button.setOnAction(actionEvent -> {
             try {
@@ -54,7 +70,12 @@ public class DCInputController implements Initializable {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/diffchecker/diffcheckerpoc/dc-output-scene.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         DCOutputController controller= fxmlLoader.getController();
-        controller.copyTextDetails(this.text_area_alpha,this.text_area_beta);
+        controller.copyTextDetails(this.text_area_alpha,
+                this.text_area_beta,
+                this.total_characters_alpha.getText(),
+                this.total_lines_alpha.getText(),
+                this.total_characters_beta.getText(),
+                this.total_lines_beta.getText());
         Stage stage = new Stage();
         stage.setScene(scene);
         stage.setResizable(false);

@@ -8,3 +8,12 @@
     -fx-background-radius: 10 10 10 10;
     -fx-font-family: "Verdana";
 }
+
+.text_area_details_container {
+    -fx-background-color: #EEEEEE;
+    -fx-border-radius: 5 5 5 5;
+    -fx-background-radius: 5 5 5 5;
+    -fx-font-family: "Verdana";
+    -fx-spacing: 3;
+    -fx-padding: 2;
+}
