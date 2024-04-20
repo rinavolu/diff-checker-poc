@@ -17,3 +17,45 @@
     -fx-spacing: 3;
     -fx-padding: 2;
 }
+
+.virtualized-scroll-pane > .scroll-bar:vertical {
+    /* your styling here */
+    -fx-background-color: transparent;
+    /*-fx-pref-width: 1.2em;*/
+}
+
+.virtualized-scroll-pane .scroll-bar:horizontal .track,
+.virtualized-scroll-pane .scroll-bar:vertical .track{
+    -fx-background-color:transparent;
+    -fx-border-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-border-radius:2em;
+}
+
+.virtualized-scroll-pane .scroll-bar:vertical .thumb ,
+.virtualized-scroll-pane .scroll-bar:horizontal .thumb {
+    -fx-background-color: #dedad9;
+    -fx-background-insets: 2, 0, 0;
+    -fx-background-radius: 2em;
+}
+
+
+.virtualized-scroll-pane .scroll-bar:vertical > .increment-button,
+.virtualized-scroll-pane .scroll-bar:vertical > .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:0 10 0 0;
+}
+
+.virtualized-scroll-pane .scroll-bar:horizontal .increment-button,
+.virtualized-scroll-pane .scroll-bar:horizontal .decrement-button {
+    -fx-background-color:transparent;
+    -fx-background-radius: 0em;
+    -fx-padding:0 10 0 0;
+}
+
+.virtualized-scroll-pane .scroll-bar .increment-arrow ,
+.virtualized-scroll-pane .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding:0;
+}
