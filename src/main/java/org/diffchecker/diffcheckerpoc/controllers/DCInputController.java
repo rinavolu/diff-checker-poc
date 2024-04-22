@@ -13,6 +13,7 @@ import org.reactfx.value.Var;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ResourceBundle;
 
 public class DCInputController implements Initializable {
@@ -66,20 +67,22 @@ public class DCInputController implements Initializable {
 
 
     private void onDiffCheckButton() throws IOException {
-
+        //System.out.println("Before FXML Load: "+ Instant.now());
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/diffchecker/diffcheckerpoc/dc-output-scene.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
-        DCOutputController controller= fxmlLoader.getController();
-        controller.copyTextDetails(this.text_area_alpha,
-                this.text_area_beta,
-                this.total_characters_alpha.getText(),
-                this.total_lines_alpha.getText(),
-                this.total_characters_beta.getText(),
-                this.total_lines_beta.getText());
         Stage stage = new Stage();
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
+        //System.out.println("After Stage Creation: "+ Instant.now());
+        DCOutputController controller= fxmlLoader.getController();
+        controller.copyTextDetails(this.text_area_alpha.getText(),
+                this.text_area_beta.getText(),
+                this.total_characters_alpha.getText(),
+                this.total_lines_alpha.getText(),
+                this.total_characters_beta.getText(),
+                this.total_lines_beta.getText());
+        //System.out.println("After Copy Text Details: "+ Instant.now());
     }
 
     private void addDualScrolls(){

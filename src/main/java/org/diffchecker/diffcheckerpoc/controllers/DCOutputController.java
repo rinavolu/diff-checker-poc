@@ -3,6 +3,7 @@ package org.diffchecker.diffcheckerpoc.controllers;
 import com.github.difflib.DiffUtils;
 import com.github.difflib.patch.AbstractDelta;
 import com.github.difflib.patch.Patch;
+import javafx.application.Platform;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -12,6 +13,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.diffchecker.diffcheckerpoc.DiffLineNumber;
@@ -39,6 +41,7 @@ public class DCOutputController implements Initializable {
     public Label total_lines_alpha;
     public Label total_characters_beta;
     public Label total_lines_beta;
+    public ProgressBar diff_compute_progress_bar;
 
     private ObservableList<Integer> diffLineNumbersAlpha;
     private ObservableList<Integer> diffLineNumbersBeta;
@@ -64,8 +67,8 @@ public class DCOutputController implements Initializable {
         this.diffLineNumbersAlpha = FXCollections.observableArrayList();
         this.diffLineNumbersBeta = FXCollections.observableArrayList();
 
-        this.diffLineNumbersPropertyAlpha = new SimpleListProperty<Integer>(diffLineNumbersAlpha);
-        this.diffLineNumbersPropertyBeta = new SimpleListProperty<Integer>(diffLineNumbersBeta);
+        this.diffLineNumbersPropertyAlpha = new SimpleListProperty<>(diffLineNumbersAlpha);
+        this.diffLineNumbersPropertyBeta = new SimpleListProperty<>(diffLineNumbersBeta);
 
         close_stage.setOnAction(actionEvent -> {
             Stage stage =(Stage) close_stage.getScene().getWindow();
@@ -107,8 +110,8 @@ public class DCOutputController implements Initializable {
     }
 
 
-    public void copyTextDetails(StyleClassedTextArea text_area_input_alpha,
-                                StyleClassedTextArea text_area_input_beta,
+    public void copyTextDetails(String text_area_input_alpha,
+                                String text_area_input_beta,
                                 String total_characters_alpha,
                                 String total_lines_alpha,
                                 String total_characters_beta,
@@ -125,90 +128,92 @@ public class DCOutputController implements Initializable {
     }
 
 
-    public void newComputeDiff(StyleClassedTextArea text_area_input_alpha,
-                               StyleClassedTextArea text_area_input_beta){
-        String text_alpha= text_area_input_alpha.getText();
-        String text_beta = text_area_input_beta.getText();
-
+    public void newComputeDiff(String text_alpha,
+                               String text_beta){
+        int text_alpha_length = text_alpha.length();
+        int text_beta_length = text_beta.length();
         Patch<String> patch = DiffUtils.diff(Arrays.asList(text_alpha.split("")), Arrays.asList(text_beta.split("")));
 
         List<AbstractDelta<String>> deltas = patch.getDeltas();
-        int startPositionAlpha = 0;
-        int startPositionBeta = 0;
 
-        //Fill text area Alpha
-        for(AbstractDelta<String> delta:deltas) {
+        double progressIncrement = (double) 1 /deltas.size();
+        //System.out.println("Initial Progress: "+diff_compute_progress_bar.getProgress());
+        Platform.runLater(() -> {
+            int startPositionAlpha = 0;
+            int startPositionBeta = 0;
 
-            //Add paragraph numbers to list
-            //alpha
-            boolean isAlphaLineNumberCaptured = false;
-            boolean isBetaLineNumberCaptured = false;
+            //Fill text area Alpha
+            for(AbstractDelta<String> delta:deltas) {
+                //Platform.runLater(()->diff_compute_progress_bar.setProgress(diff_compute_progress_bar.getProgress()+progressIncrement));
+                //System.out.println("Setting Progress to :"+(diff_compute_progress_bar.getProgress()+progressIncrement));
+                diff_compute_progress_bar.setProgress(diff_compute_progress_bar.getProgress()+progressIncrement);
 
-            int alpha_paragraph_line_number =-1;
-            int beta_paragraph_line_number =-1;
-            if (delta.getSource().getPosition() < text_alpha.length()) {
-                alpha_paragraph_line_number = getLineNumberForIndex(text_alpha, delta.getSource().getPosition());
-                int alpha_new_lines_count = getLinesCount(delta.getSource().getLines());
-                DiffLineNumber alphaDiffLineNumber = new DiffLineNumber(alpha_paragraph_line_number, alpha_new_lines_count);
+                //Add paragraph numbers to list
+                //alpha
+                int alpha_paragraph_line_number =-1;
+                int beta_paragraph_line_number =-1;
+                if (delta.getSource().getPosition() < text_alpha.length()) {
+                    alpha_paragraph_line_number = getLineNumberForIndex(text_alpha, delta.getSource().getPosition());
+                    int alpha_new_lines_count = getLinesCount(delta.getSource().getLines());
+                    DiffLineNumber alphaDiffLineNumber = new DiffLineNumber(alpha_paragraph_line_number, alpha_new_lines_count);
 
-                addDiffLineNumbers(alphaDiffLineNumber, true);
+                    addDiffLineNumbers(alphaDiffLineNumber, true);
+                }
+
+                //beta
+                if(delta.getTarget().getPosition() < text_beta.length()) {
+                    beta_paragraph_line_number = getLineNumberForIndex(text_beta, delta.getTarget().getPosition());
+                    int beta_new_lines_count = getLinesCount(delta.getTarget().getLines());
+                    DiffLineNumber betaDiffLineNumber = new DiffLineNumber(beta_paragraph_line_number, beta_new_lines_count);
+
+                    addDiffLineNumbers(betaDiffLineNumber, false);
+                }
+
+                if(alpha_paragraph_line_number!=-1 || beta_paragraph_line_number!=-1){
+                    String str="";
+                    if(alpha_paragraph_line_number==-1&&beta_paragraph_line_number!=-1){
+                        str="BETA";
+                    }
+                    if (alpha_paragraph_line_number!=-1&&beta_paragraph_line_number==-1) {
+                        str="ALPHA";
+                    }
+                    if (alpha_paragraph_line_number!=-1&&beta_paragraph_line_number!=-1){
+                        str= "ALPHA+BETA";
+                    }
+                    lineNumberRefs.add(new LineNumberRef(str,alpha_paragraph_line_number,beta_paragraph_line_number));
+                }
+
+                //Alpha
+                int startLineAlpha = delta.getSource().getPosition();
+                int endLineAlpha = delta.getSource().getPosition()+delta.getSource().size();
+
+                //Copy Text Alpha
+                copyText("ALPHA",text_alpha,startPositionAlpha,startLineAlpha);
+
+                //Add the delta to alpha
+                copyDelta("ALPHA",delta,text_alpha);
+                startPositionAlpha = endLineAlpha;
+
+
+                //Beta
+                int startLineBeta = delta.getTarget().getPosition();
+                int endLineBeta = delta.getTarget().getPosition()+ delta.getTarget().size();
+
+                //Copy Text Alpha
+                copyText("BETA",text_beta,startPositionBeta,startLineBeta);
+
+                //Add the delta to beta
+                copyDelta("BETA",delta,text_beta);
+                startPositionBeta = endLineBeta;
             }
 
-            //beta
-            if(delta.getTarget().getPosition() < text_beta.length()) {
-                beta_paragraph_line_number = getLineNumberForIndex(text_beta, delta.getTarget().getPosition());
-                int beta_new_lines_count = getLinesCount(delta.getTarget().getLines());
-                DiffLineNumber betaDiffLineNumber = new DiffLineNumber(beta_paragraph_line_number, beta_new_lines_count);
+            //Copy remaining text to alpha
+            copyText("ALPHA",text_alpha,startPositionAlpha, text_alpha_length);
 
-                addDiffLineNumbers(betaDiffLineNumber, false);
-            }
-
-            if(alpha_paragraph_line_number!=-1 || beta_paragraph_line_number!=-1){
-                String str="";
-                if(alpha_paragraph_line_number==-1&&beta_paragraph_line_number!=-1){
-                    str="BETA";
-                }
-                if (alpha_paragraph_line_number!=-1&&beta_paragraph_line_number==-1) {
-                    str="ALPHA";
-                }
-                if (alpha_paragraph_line_number!=-1&&beta_paragraph_line_number!=-1){
-                    str= "ALPHA+BETA";
-                }
-                lineNumberRefs.add(new LineNumberRef(str,alpha_paragraph_line_number,beta_paragraph_line_number));
-            }
-
-            //Alpha
-            int startLineAlpha = delta.getSource().getPosition();
-            int endLineAlpha = delta.getSource().getPosition()+delta.getSource().size();
-
-            //Copy Text Alpha
-            copyText("ALPHA",text_area_input_alpha,startPositionAlpha,startLineAlpha);
-
-            //Add the delta to alpha
-            copyDelta("ALPHA",delta,text_area_input_alpha);
-            startPositionAlpha = endLineAlpha;
-
-
-            //Beta
-            int startLineBeta = delta.getTarget().getPosition();
-            int endLineBeta = delta.getTarget().getPosition()+ delta.getTarget().size();
-
-            //Copy Text Alpha
-            copyText("BETA",text_area_input_beta,startPositionBeta,startLineBeta);
-
-            //Add the delta to beta
-            copyDelta("BETA",delta,text_area_input_beta);
-            startPositionBeta = endLineBeta;
-
-
-        }
-
-        //Copy remaining text to alpha
-        copyText("ALPHA",text_area_input_alpha,startPositionAlpha, text_alpha.length());
-
-        //Copy remaining text to beta
-        copyText("BETA",text_area_input_beta,startPositionBeta, text_beta.length());
-        lineNumberRefIterator = lineNumberRefs.iterator();
+            //Copy remaining text to beta
+            copyText("BETA",text_beta,startPositionBeta, text_beta_length);
+            lineNumberRefIterator = lineNumberRefs.iterator();
+        });
     }
 
     private void addDiffLineNumbers(DiffLineNumber diffLineNumber,Boolean isAlpha){
@@ -254,25 +259,23 @@ public class DCOutputController implements Initializable {
         return count;
     }
 
-    public void copyText(String textAreaType, StyleClassedTextArea text_area_input,
+    public void copyText(String textAreaType, String text_input,
                                int startPosition,int endPosition){
-        String text= text_area_input.getText();
-        System.out.println(textAreaType+" :: Appending Text copyText():: "+text.substring(startPosition,endPosition));
+       // System.out.println(textAreaType+" :: Appending Text copyText():: "+text.substring(startPosition,endPosition));
         if(textAreaType.equals("ALPHA")){
-            this.text_area_output_alpha.append(text.substring(startPosition,endPosition),"no-diff-bg");
+            this.text_area_output_alpha.append(text_input.substring(startPosition,endPosition),"no-diff-bg");
         }else{
-            this.text_area_output_beta.append(text.substring(startPosition,endPosition),"no-diff-bg");
+            this.text_area_output_beta.append(text_input.substring(startPosition,endPosition),"no-diff-bg");
         }
     }
 
-    private void copyDelta(String textAreaType, AbstractDelta<String> delta,StyleClassedTextArea text_area_input){
-        String text = text_area_input.getText();
+    private void copyDelta(String textAreaType, AbstractDelta<String> delta,String text_input){
         switch (delta.getType()){
             case INSERT :
-                copyDelta(textAreaType,delta,text, "new-line-highlight");
+                copyDelta(textAreaType,delta,text_input, "new-line-highlight");
                 break;
             case CHANGE,DELETE:
-                copyDelta(textAreaType, delta,text,"old-line-highlight");
+                copyDelta(textAreaType, delta,text_input,"old-line-highlight");
                 break;
             case EQUAL:
                 System.out.println("CHECK THIS: "+delta.getType());
@@ -283,15 +286,15 @@ public class DCOutputController implements Initializable {
         if(type.equals("ALPHA")){
             int startPosition = delta.getSource().getPosition();
             int endPosition = delta.getSource().getPosition()+delta.getSource().size();
-            System.out.println("Alpha :: Appending Delta Text ("+delta.getType()+") copyDelta():: "+
-                    text.substring(startPosition,endPosition) +" size: "+text.substring(startPosition,endPosition).length());
+           /* System.out.println("Alpha :: Appending Delta Text ("+delta.getType()+") copyDelta():: "+
+                    text.substring(startPosition,endPosition) +" size: "+text.substring(startPosition,endPosition).length());*/
 
             text_area_output_alpha.append(text.substring(startPosition, endPosition), styleClass);
 
         }else {
             int startPosition = delta.getTarget().getPosition();
             int endPosition = delta.getTarget().getPosition()+delta.getTarget().size();
-            System.out.println("Beta :: Appending Delta Text ("+delta.getType()+") copyDelta():: "+text.substring(startPosition,endPosition));
+            //System.out.println("Beta :: Appending Delta Text ("+delta.getType()+") copyDelta():: "+text.substring(startPosition,endPosition));
             text_area_output_beta.append(text.substring(startPosition,endPosition),styleClass);
         }
 
