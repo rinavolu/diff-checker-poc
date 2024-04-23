@@ -9,6 +9,32 @@
     -fx-font-family: "Verdana";
 }
 
+.new-line {
+    -rtfx-background-color: #8cea8c; /* Light green background */
+}
+
+.styled-text-area .old-line {
+    -fx-fill: #e37d7d; /* Light red background */
+    /*-rtfx-background-color: yellow;*/
+}
+
+.old-line-highlight{
+    -rtfx-background-color: #e13d3d;
+}
+
+.old-line-highlight .lineNumber {
+    -fx-text-fill: red;
+}
+
+.new-line-highlight {
+    -rtfx-background-color: #44d315; /* Light red background */
+    /*-rtfx-background-color: yellow;*/
+}
+
+.no-diff-bg {
+    -fx-background-color: #EEEEEE;
+}
+
 .text_area_details_container {
     -fx-background-color: #EEEEEE;
     -fx-border-radius: 5 5 5 5;
@@ -17,6 +43,8 @@
     -fx-spacing: 3;
     -fx-padding: 2;
 }
+
+
 
 .virtualized-scroll-pane > .scroll-bar:vertical {
     /* your styling here */

@@ -4,6 +4,8 @@ module org.diffchecker2.diffcheckerpoc {
     requires org.fxmisc.richtext;
     requires io.github.javadiffutils;
     requires org.fxmisc.flowless;
+    requires reactfx;
+
 
 
     opens org.diffchecker.diffcheckerpoc to javafx.fxml;
