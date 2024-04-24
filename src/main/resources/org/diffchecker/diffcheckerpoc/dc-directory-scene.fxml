@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeTableView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="792.7999877929688" prefWidth="1536.0" styleClass="dc_dir_container" stylesheets="@styles/dc-directory.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.diffchecker.diffcheckerpoc.controllers.directory.DCDirController">
+    <TextField fx:id="dir_input_alpha" layoutX="14.0" layoutY="14.0" prefHeight="26.0" prefWidth="658.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0" />
+    <TextField fx:id="dir_input_beta" layoutX="863.0" layoutY="14.0" prefHeight="26.0" prefWidth="658.0" AnchorPane.rightAnchor="14.0" />
+    <Button fx:id="dir_input_read_alpha_btn" layoutX="681.0" layoutY="15.0" mnemonicParsing="false" text="Read" AnchorPane.leftAnchor="680.0" AnchorPane.topAnchor="14.0" />
+    <Button fx:id="dir_input_read_beta_btn" layoutX="805.0" layoutY="15.0" mnemonicParsing="false" text="Read" AnchorPane.rightAnchor="680.0" AnchorPane.topAnchor="14.0" />
+    <TreeTableView fx:id="dir_tree_alpha" layoutX="14.0" layoutY="56.0" prefHeight="348.0" prefWidth="714.0" AnchorPane.leftAnchor="14.0" />
+    <TreeTableView fx:id="dir_tree_beta" layoutX="807.0" layoutY="56.0" prefHeight="348.0" prefWidth="714.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="56.0" />
+    <TreeTableView fx:id="diff_dir_tree_alpha" layoutX="14.0" layoutY="418.0" prefHeight="348.0" prefWidth="714.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="14.0" />
+    <TreeTableView fx:id="diff_dir_tree_beta" layoutX="807.0" layoutY="418.0" prefHeight="348.0" prefWidth="714.0" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="14.0" />
+    <Button fx:id="diff_compute_btn" layoutX="742.0" layoutY="76.0" mnemonicParsing="false" text="Diff" AnchorPane.leftAnchor="745.0" AnchorPane.topAnchor="80.0" />
+</AnchorPane>
