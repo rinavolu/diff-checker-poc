@@ -21,7 +21,7 @@ public class DCMenuController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         text_dc_btn.setOnAction(actionEvent -> textDiffCheckerButtonOnAction());
         dir_dc_btn.setOnAction(actionEvent -> directoryDiffButtonOnAction());
-        api_dc_btn.setDisable(true);
+        api_dc_btn.setOnAction(actionEvent -> apiDiffButtonOnAction());
         audio_dc_btn.setDisable(true);
     }
 
@@ -50,6 +50,21 @@ public class DCMenuController implements Initializable {
             throw new RuntimeException(e);
         }
         stage.setTitle("Dir Checker Poc");
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
+    }
+
+    private void apiDiffButtonOnAction(){
+        Stage stage = new Stage();
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/diffchecker/diffcheckerpoc/dc-api-scene.fxml"));
+        Scene scene = null;
+        try {
+            scene = new Scene(fxmlLoader.load());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        stage.setTitle("API Diff Checker Poc");
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
