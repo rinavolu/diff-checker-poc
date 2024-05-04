@@ -26,18 +26,27 @@ public class DCApiController implements Initializable {
     public TextArea curl_alpha_text_area;
     public Button alpha_execute_btn;
     public StyleClassedTextArea alpha_response_text_area;
+    public TextArea curl_beta_text_area;
+    public Button beta_execute_btn;
+    public StyleClassedTextArea beta_response_text_area;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
         curl_alpha_text_area.setWrapText(true);
+        curl_beta_text_area.setWrapText(true);
         initializeResponseTextArea();
         alpha_execute_btn.setOnAction(event -> executeAlphaCurl(curl_alpha_text_area.getText()));
+
+        beta_execute_btn.setOnAction(event -> executeBetaCurl(curl_beta_text_area.getText()));
     }
 
     private void initializeResponseTextArea(){
         alpha_response_text_area.setWrapText(true);
         alpha_response_text_area.setParagraphGraphicFactory(LineNumberFactory.get(alpha_response_text_area));
+
+        beta_response_text_area.setWrapText(true);
+        beta_response_text_area.setParagraphGraphicFactory(LineNumberFactory.get(beta_response_text_area));
     }
 
     private void executeAlphaCurl(String alpha_curl_str){
@@ -45,15 +54,19 @@ public class DCApiController implements Initializable {
         /*TODO Refactoring Required
         *  1. Use only one either gson or fasterxml
         *  2. Refactor getStyleSpans() */
-
-
         String alpha_response = $(alpha_curl_str);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonElement jsonElement = JsonParser.parseString(alpha_response);
         alpha_response_text_area.appendText(gson.toJson(jsonElement));
         alpha_response_text_area.setStyleSpans(0,getStyleSpans(gson.toJson(jsonElement)));
+    }
 
-
+    private void executeBetaCurl(String beta_curl_str){
+        String beta_response = $(beta_curl_str);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        JsonElement jsonElement = JsonParser.parseString(beta_response);
+        beta_response_text_area.appendText(gson.toJson(jsonElement));
+        beta_response_text_area.setStyleSpans(0,getStyleSpans(gson.toJson(jsonElement)));
     }
 
     private StyleSpans<Collection<String>> getStyleSpans(String jsonResponse){
