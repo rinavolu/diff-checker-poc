@@ -2,6 +2,10 @@ package org.diffchecker.diffcheckerpoc.controllers.api;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonToken;
+import com.github.difflib.DiffUtils;
+import com.github.difflib.patch.AbstractDelta;
+import com.github.difflib.patch.DeltaType;
+import com.github.difflib.patch.Patch;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -9,6 +13,7 @@ import com.google.gson.JsonParser;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
+import org.diffchecker.diffcheckerpoc.DiffMatch;
 import org.diffchecker.diffcheckerpoc.JsonMatch;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -29,6 +34,7 @@ public class DCApiController implements Initializable {
     public TextArea curl_beta_text_area;
     public Button beta_execute_btn;
     public StyleClassedTextArea beta_response_text_area;
+    public Button diff_check_btn;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -39,6 +45,14 @@ public class DCApiController implements Initializable {
         alpha_execute_btn.setOnAction(event -> executeAlphaCurl(curl_alpha_text_area.getText()));
 
         beta_execute_btn.setOnAction(event -> executeBetaCurl(curl_beta_text_area.getText()));
+        diff_check_btn.setOnAction(actionEvent -> computeDiff());
+    }
+
+    private void computeDiff() {
+
+        List<StyleSpans<Collection<String>>> computedStyleSpans = getComputedStyleSpans();
+        alpha_response_text_area.setStyleSpans(0, computedStyleSpans.get(0));
+        beta_response_text_area.setStyleSpans(0, computedStyleSpans.get(1));
     }
 
     private void initializeResponseTextArea(){
@@ -54,6 +68,7 @@ public class DCApiController implements Initializable {
         /*TODO Refactoring Required
         *  1. Use only one either gson or fasterxml
         *  2. Refactor getStyleSpans() */
+        alpha_response_text_area.clear();
         String alpha_response = $(alpha_curl_str);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonElement jsonElement = JsonParser.parseString(alpha_response);
@@ -62,6 +77,7 @@ public class DCApiController implements Initializable {
     }
 
     private void executeBetaCurl(String beta_curl_str){
+        beta_response_text_area.clear();
         String beta_response = $(beta_curl_str);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonElement jsonElement = JsonParser.parseString(beta_response);
@@ -127,6 +143,91 @@ public class DCApiController implements Initializable {
             case VALUE_NUMBER_FLOAT, VALUE_NUMBER_INT -> "json-number";
             default -> "";
         };
+    }
+
+
+    //New Diff Compute Logic
+    private List<StyleSpans<Collection<String>>> getComputedStyleSpans(){
+
+        List<DiffMatch> diffMatchesAlpha = new ArrayList<>();
+        List<DiffMatch> diffMatchesBeta = new ArrayList<>();
+
+        //StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        String response_alpha = this.alpha_response_text_area.getText();
+        String response_beta = this.beta_response_text_area.getText();
+        Patch<String> patch = DiffUtils.diff(Arrays.asList(response_alpha.split("")), Arrays.asList(response_beta.split("")));
+
+        List<AbstractDelta<String>> deltas = patch.getDeltas();
+        int startPositionAlpha = 0;
+        int startPositionBeta = 0;
+
+        for(AbstractDelta<String> delta:deltas){
+            //Alpha
+            int alpha_start_pos = delta.getSource().getPosition();
+            int alpha_end_pos = delta.getSource().getPosition() + delta.getSource().size();
+            //Copy Non Diff Text
+            diffMatchesAlpha.add(new DiffMatch("",
+                    startPositionAlpha
+                    ,alpha_start_pos));
+            //Copy Delta
+            diffMatchesAlpha.add(new DiffMatch(getStyleClass(delta.getType()),
+                    alpha_start_pos,
+                    alpha_end_pos));
+            startPositionAlpha = alpha_end_pos;
+
+
+            //Beta
+            int beta_start_pos = delta.getTarget().getPosition();
+            int beta_end_pos = delta.getTarget().getPosition() + delta.getTarget().size();
+            //Copy Non Diff Text
+            diffMatchesBeta.add(new DiffMatch("",
+                    startPositionBeta,
+                    beta_start_pos));
+            //Copy Delta
+            diffMatchesBeta.add(new DiffMatch(getStyleClass(delta.getType()),
+                    beta_start_pos,
+                    beta_end_pos));
+            startPositionBeta = beta_end_pos;
+        }
+
+        //Build Spans
+        //Alpha
+        StyleSpansBuilder<Collection<String>> spansBuilderAlpha = new StyleSpansBuilder<>();
+        for(DiffMatch diffMatch:diffMatchesAlpha){
+            int length = diffMatch.endPos - diffMatch.startPos;
+            if(diffMatch.styleClass.isEmpty()){
+                spansBuilderAlpha.add(Collections.emptyList(), length);
+            }else {
+                spansBuilderAlpha.add(Collections.singleton(diffMatch.styleClass),length);
+            }
+        }
+        StyleSpansBuilder<Collection<String>> spansBuilderBeta = new StyleSpansBuilder<>();
+        for(DiffMatch diffMatch:diffMatchesBeta){
+            int length = diffMatch.endPos - diffMatch.startPos;
+            if(diffMatch.styleClass.isEmpty()){
+                spansBuilderBeta.add(Collections.emptyList(), length);
+            }else {
+                spansBuilderBeta.add(Collections.singleton(diffMatch.styleClass),length);
+            }
+        }
+
+        List<StyleSpans<Collection<String>>> spansBuilder = new ArrayList<>();
+        spansBuilder.add(spansBuilderAlpha.create());
+        spansBuilder.add(spansBuilderBeta.create());
+        return spansBuilder;
+    }
+
+    private String getText(String text , int startPos, int endPos){
+        return text.substring(startPos, endPos+1);
+    }
+
+    private String getStyleClass(DeltaType type){
+        String className = switch (type) {
+            case INSERT -> "new-line-highlight";
+            case CHANGE, DELETE -> "old-line-highlight";
+            case EQUAL -> "";
+        };
+        return className;
     }
 
 }

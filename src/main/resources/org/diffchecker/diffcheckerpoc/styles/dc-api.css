@@ -13,3 +13,12 @@
 .json-string {
     -fx-fill: red;
 }
+
+.new-line-highlight {
+    -rtfx-background-color: #44d315; /* Light red background */
+    /*-rtfx-background-color: yellow;*/
+}
+
+.old-line-highlight{
+    -rtfx-background-color: #e13d3d;
+}
