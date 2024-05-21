@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import org.fxmisc.richtext.StyleClassedTextArea?>
+
+<AnchorPane prefHeight="792.7999877929688" prefWidth="1536.0" stylesheets="@styles/dc-api.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.diffchecker.diffcheckerpoc.controllers.api.DCApiController">
+   <TextArea fx:id="curl_alpha_text_area" layoutX="14.0" layoutY="14.0" prefHeight="150.0" prefWidth="660.0" AnchorPane.leftAnchor="14.0" AnchorPane.topAnchor="14.0" />
+   <Button fx:id="alpha_execute_btn" layoutX="316.0" layoutY="175.0" mnemonicParsing="false" text="Execute" AnchorPane.topAnchor="172.0" />
+   <StyleClassedTextArea fx:id="alpha_response_text_area" layoutX="14.0" layoutY="201.0" prefHeight="582.0" prefWidth="660.0" />
+   <TextArea fx:id="curl_beta_text_area" layoutX="854.0" layoutY="14.0" prefHeight="150.0" prefWidth="660.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0" />
+   <Button fx:id="beta_execute_btn" layoutX="1170.0" layoutY="172.0" mnemonicParsing="false" text="Execute" AnchorPane.topAnchor="172.0" />
+   <StyleClassedTextArea fx:id="beta_response_text_area" layoutX="862.0" layoutY="201.0" prefHeight="582.0" prefWidth="660.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="200.0" />
+   <Button fx:id="diff_check_btn" layoutX="742.0" layoutY="172.0" mnemonicParsing="false" text="Diff check" />
+</AnchorPane>
