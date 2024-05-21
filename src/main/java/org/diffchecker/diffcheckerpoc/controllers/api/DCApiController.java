@@ -49,7 +49,8 @@ public class DCApiController implements Initializable {
     }
 
     private void computeDiff() {
-
+        //Refer this for multiple style spans
+        //https://github.com/FXMisc/RichTextFX/issues/715#issuecomment-377659072
         List<StyleSpans<Collection<String>>> computedStyleSpans = getComputedStyleSpans();
         alpha_response_text_area.setStyleSpans(0, computedStyleSpans.get(0));
         beta_response_text_area.setStyleSpans(0, computedStyleSpans.get(1));
