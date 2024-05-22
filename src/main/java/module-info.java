@@ -16,6 +16,7 @@ module org.diffchecker2.diffcheckerpoc {
     requires com.fasterxml.jackson.databind;
     requires java.sql;
     requires org.postgresql.jdbc;
+    requires org.apache.commons.dbutils;
 
 
     opens org.diffchecker.diffcheckerpoc to javafx.fxml;

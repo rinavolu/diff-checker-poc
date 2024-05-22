@@ -5,11 +5,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import org.apache.commons.dbutils.BasicRowProcessor;
+import org.apache.commons.dbutils.RowProcessor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DynamicTableView extends TableView<ObservableList<String>> {
 
@@ -17,10 +21,16 @@ public class DynamicTableView extends TableView<ObservableList<String>> {
 
     private List<String> columnNames;
 
-    public DynamicTableView(ResultSet resultSet) throws SQLException {
+    private String[] primaryKeys;
+
+    private Map<String, String> dataMap;
+
+    public DynamicTableView(ResultSet resultSet,String[] primaryKeys) throws SQLException {
         super();
         this.resultSet = resultSet;
         this.columnNames = new ArrayList<>();
+        this.primaryKeys = primaryKeys;
+        this.dataMap = new HashMap<>();
         buildTableData();
     }
 
@@ -37,10 +47,24 @@ public class DynamicTableView extends TableView<ObservableList<String>> {
             getColumns().addAll(col);
         }
 
+        RowProcessor rowProcessor = new BasicRowProcessor();
+
         //Get Data
         while (resultSet.next()) {
             //Iterate Row
             ObservableList<String> row = FXCollections.observableArrayList();
+
+            //Process row to a map
+            //Extract Primary Key values for map
+            StringBuilder primaryKey = new StringBuilder();
+            for(String pkColumn : primaryKeys){
+                primaryKey.append(resultSet.getString(pkColumn));
+            }
+
+            String rowStr = rowProcessor.toMap(resultSet).toString();
+
+            this.dataMap.put(primaryKey.toString(), rowStr);
+
             for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
                 //Iterate Column
                 row.add(resultSet.getString(i));
@@ -58,5 +82,7 @@ public class DynamicTableView extends TableView<ObservableList<String>> {
         return columnNames;
     }
 
-
+    public Map<String, String> getDataMap() {
+        return dataMap;
+    }
 }
