@@ -14,7 +14,9 @@ module org.diffchecker2.diffcheckerpoc {
     requires com.google.gson;
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
-
+    requires java.sql;
+    requires org.postgresql.jdbc;
+    requires org.apache.commons.dbutils;
 
 
     opens org.diffchecker.diffcheckerpoc to javafx.fxml;
@@ -22,5 +24,6 @@ module org.diffchecker2.diffcheckerpoc {
     exports org.diffchecker.diffcheckerpoc.controllers;
     exports org.diffchecker.diffcheckerpoc.controllers.directory;
     exports org.diffchecker.diffcheckerpoc.controllers.api;
+    exports org.diffchecker.diffcheckerpoc.controllers.database;
     opens org.diffchecker.diffcheckerpoc.controllers to javafx.fxml;
 }
