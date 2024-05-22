@@ -15,6 +15,7 @@ public class DCMenuController implements Initializable {
     public Button dir_dc_btn;
     public Button api_dc_btn;
     public Button audio_dc_btn;
+    public Button database_btn;
 
 
     @Override
@@ -22,6 +23,7 @@ public class DCMenuController implements Initializable {
         text_dc_btn.setOnAction(actionEvent -> textDiffCheckerButtonOnAction());
         dir_dc_btn.setOnAction(actionEvent -> directoryDiffButtonOnAction());
         api_dc_btn.setOnAction(actionEvent -> apiDiffButtonOnAction());
+        database_btn.setOnAction(actionEvent -> databaseDiffButtonOnAction());
         audio_dc_btn.setDisable(true);
     }
 
@@ -65,6 +67,21 @@ public class DCMenuController implements Initializable {
             throw new RuntimeException(e);
         }
         stage.setTitle("API Diff Checker Poc");
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
+    }
+
+    private void databaseDiffButtonOnAction(){
+        Stage stage = new Stage();
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/diffchecker/diffcheckerpoc/dc-table-scene.fxml"));
+        Scene scene;
+        try {
+            scene = new Scene(fxmlLoader.load());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        stage.setTitle("Database Diff Checker Poc");
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
