@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import org.apache.commons.dbutils.BasicRowProcessor;
 import org.apache.commons.dbutils.RowProcessor;
@@ -34,11 +35,17 @@ public class DynamicTableView extends TableView<ObservableList<String>> {
         buildTableData();
     }
 
+    public DynamicTableView(ObservableList<TableColumn<ObservableList<String>, ?>> columns,
+                            ObservableList<ObservableList<String>> rows, Map<String, KeyDiff> keyDiffs){
+        super();
+        this.columnNames = new ArrayList<>();
+        buildTableData(columns, rows, keyDiffs);
+    }
+
     private void buildTableData() throws SQLException {
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
 
         //Get Columns & set headers
-        System.out.println("Column count :"+resultSet.getMetaData().getColumnCount());
         for(int i = 0 ; i < resultSet.getMetaData().getColumnCount();i++){
             final int j = i;
             TableColumn<ObservableList<String>, String> col = new TableColumn<>(resultSet.getMetaData().getColumnName(i+1));
@@ -78,8 +85,34 @@ public class DynamicTableView extends TableView<ObservableList<String>> {
         setItems(data);
     }
 
-    public List<String> getColumnNames() {
-        return columnNames;
+    private void buildTableData(ObservableList<TableColumn<ObservableList<String>, ?>>columns,
+                                ObservableList<ObservableList<String>> rows, Map<String, KeyDiff> keyDiffs){
+        getColumns().setAll(columns);
+        setRowFactory(tv -> new TableRow<ObservableList<String>>(){
+            @Override
+            public void updateItem(ObservableList<String> item, boolean empty) {
+                super.updateItem(item, empty);
+                if(item==null || empty) {
+                    setGraphic(null);
+                    setStyle("");
+                }
+                else if (keyDiffs.containsKey(item.get(0))) {
+                    String primaryKey = item.get(0);
+                    KeyDiff keyDiff = keyDiffs.get(primaryKey);
+                    if(keyDiff.getDiffType().equals("ARM")||keyDiff.getDiffType().equals("BRM")){
+                        System.out.println("Applying style for "+primaryKey);
+                        getStyleClass().clear();
+                        getStyleClass().add("arm_brm_container");
+                    }else if(keyDiff.getDiffType().equals("ABRMM")){
+                        getStyleClass().clear();
+                        getStyleClass().add("abrmm_container");
+                    }
+                }else{
+                    getStyleClass().add("normal_container");
+                }
+            }
+        });
+        setItems(rows);
     }
 
     public Map<String, String> getDataMap() {

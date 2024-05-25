@@ -1,3 +1,15 @@
 .borderpane_container {
     -fx-background-color: #888888;
 }
+
+.arm_brm_container {
+    -fx-background-color: red;
+}
+
+.abrmm_container {
+    -fx-background-color: black;
+}
+
+.normal_container {
+    -fx-background-color: white;
+}

@@ -1,17 +1,19 @@
 package org.diffchecker.diffcheckerpoc.controllers.database;
 
+import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 
 import java.net.URL;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class DCTableController implements Initializable {
 
@@ -23,11 +25,11 @@ public class DCTableController implements Initializable {
 
     private Map<String,String> alpha_data_map,beta_data_map;
 
+    private DynamicTableView alpha_dynamic_table_view, beta_dynamic_table_view;
+
     //TODO Change to Array
     private List<KeyDiff> keyDiffs;
-
-    /*public TableView tableView;
-    private ObservableList<ObservableList> data;*/
+    private Map<String, KeyDiff> key_diff_map;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -47,20 +49,21 @@ public class DCTableController implements Initializable {
         String sql = "SELECT * FROM lk_state";
         String tableName = "lk_state";
         ResultSet resultSet = databaseConnection.executeQuery(sql);
-        DynamicTableView dynamicTableView = new DynamicTableView(resultSet, fetchPrimaryKeysColumnName(databaseConnection, tableName));
-        alpha_data_map = dynamicTableView.getDataMap();
-        left_border_pane.setCenter(dynamicTableView);
+        alpha_dynamic_table_view = new DynamicTableView(resultSet, fetchPrimaryKeysColumnName(databaseConnection, tableName));
+        alpha_data_map = alpha_dynamic_table_view.getDataMap();
+        left_border_pane.setCenter(alpha_dynamic_table_view);
 
         sql = "SELECT * FROM lk_state_2";
         tableName = "lk_state_2";
         ResultSet resultSet2 = databaseConnection.executeQuery(sql);
-        DynamicTableView dynamicTableView2 =  new DynamicTableView(resultSet2, fetchPrimaryKeysColumnName(databaseConnection, tableName));
-        beta_data_map = dynamicTableView2.getDataMap();
-        right_border_pane.setCenter(dynamicTableView2);
+        beta_dynamic_table_view =  new DynamicTableView(resultSet2, fetchPrimaryKeysColumnName(databaseConnection, tableName));
+        beta_data_map = beta_dynamic_table_view.getDataMap();
+        right_border_pane.setCenter(beta_dynamic_table_view);
     }
 
     private void onDiffComputeBtnClicked() {
         this.keyDiffs =  new ArrayList<>();
+        this.key_diff_map = new HashMap<>();
         Map<String,String> primaryMap, secondaryMap;
         String primaryMapType, secondaryMapType;
 
@@ -81,13 +84,16 @@ public class DCTableController implements Initializable {
             if(!secondaryMap.containsKey(entry.getKey())){
                 if(primaryMapType.equals("ALPHA")) {
                     keyDiffs.add(new KeyDiff(entry.getKey(), "ARM"));
+                    key_diff_map.put(entry.getKey(), new KeyDiff(entry.getKey(), "ARM"));
                 }else{
                     keyDiffs.add(new KeyDiff(entry.getKey(), "BRM"));
+                    key_diff_map.put(entry.getKey(), new KeyDiff(entry.getKey(), "BRM"));
                 }
             }else{
                 //Compare key values that are in secondary map
                 if(!secondaryMap.get(entry.getKey()).equals(entry.getValue())){
                     keyDiffs.add(new KeyDiff(entry.getKey(),"ABRMM"));
+                    key_diff_map.put(entry.getKey(), new KeyDiff(entry.getKey(), "ABRMM"));
                 }
             }
         }
@@ -97,12 +103,73 @@ public class DCTableController implements Initializable {
             if(!primaryMap.containsKey(entry.getKey())){
                 if(secondaryMapType.equals("ALPHA")) {
                     keyDiffs.add(new KeyDiff(entry.getKey(), "ARM"));
+                    key_diff_map.put(entry.getKey(), new KeyDiff(entry.getKey(), "ARM"));
                 }else{
                     keyDiffs.add(new KeyDiff(entry.getKey(), "BRM"));
+                    key_diff_map.put(entry.getKey(), new KeyDiff(entry.getKey(), "BRM"));
                 }
             }
         }
-        System.out.println(keyDiffs.size());
+        DynamicTableView tableViewAlpha = new DynamicTableView(alpha_dynamic_table_view.getColumns(),
+                alpha_dynamic_table_view.getItems(),
+                key_diff_map);
+        left_border_pane.getChildren().clear();
+        left_border_pane.setCenter(tableViewAlpha);
+
+
+        DynamicTableView tableViewBeta = new DynamicTableView(beta_dynamic_table_view.getColumns(),
+                beta_dynamic_table_view.getItems(), key_diff_map);
+        right_border_pane.getChildren().clear();
+        right_border_pane.setCenter(tableViewBeta);
+    }
+
+    private void applyStylingBasedOnLookup(){
+
+        //Note: not a suitable approach
+        //TODO need to know primary key Indexes
+        //TODO remove 3rd parameter @applyStyleForTableRow
+        //https://gist.github.com/jewelsea/2886805
+        int i =0;
+        final ObservableList<ObservableList<String>> alpha_items = alpha_dynamic_table_view.getItems();
+        final ObservableList<ObservableList<String>> beta_items = beta_dynamic_table_view.getItems();
+        Set<Node> nodes = alpha_dynamic_table_view.lookupAll("TableRow");
+        for(Node n : alpha_dynamic_table_view.lookupAll("TableRow")){
+            if(n instanceof TableRow<?>){
+                String primaryKeyValue = alpha_items.get(i).get(0);
+                System.out.println("Checking alpha primaryKeyValue "+primaryKeyValue+" i value"+ i );
+                if(key_diff_map.containsKey(primaryKeyValue)){
+                    TableRow tableRow = (TableRow) n;
+                    applyStyleForTableRow(tableRow, primaryKeyValue, "ALPHA");
+                }
+            }else System.out.println("Not a instance");
+            //if(i==alpha_items.size()+1) break;
+            i++;
+        }
+        i=0;
+
+        for(Node n : beta_dynamic_table_view.lookupAll("TableRow")){
+            if(n instanceof TableRow<?>){
+                String primaryKeyValue = beta_items.get(i).get(0);
+                System.out.println("Checking beta primaryKeyValue "+primaryKeyValue+" i value"+ i );
+                if(key_diff_map.containsKey(primaryKeyValue)){
+                    TableRow tableRow = (TableRow) n;
+                    applyStyleForTableRow(tableRow , primaryKeyValue, "BETA");
+                }
+            }
+            if(i==beta_items.size()) break;
+            i++;
+        }
+
+    }
+
+    private void applyStyleForTableRow(TableRow tableRow, String primaryKey, String lookupType){
+        String diffType= key_diff_map.get(primaryKey).getDiffType();
+
+        if(diffType.equals("ARM")||diffType.equals("BRM")){
+            tableRow.getStyleClass().add("arm_brm_container");
+        } else if (diffType.equals("ABRMM")) {
+            tableRow.getStyleClass().add("abrmm_container");
+        }
     }
 
     private String[] fetchPrimaryKeysColumnName(DatabaseConnection databaseConnection,String table) throws SQLException {
@@ -118,30 +185,3 @@ public class DCTableController implements Initializable {
     }
 }
 
-class KeyDiff {
-
-    /*
-    * ALPHA_ROW_MISS - ARM
-    * BETA_ROW_MISS - BRM
-    * ALPHA_ROW_MISS_MATCH in alpha table - ARMM
-    * BETA_ROW_MISS_MATCH in beta table - BRMM
-    * ROW_MISS_MATCH - ABRMM
-    * */
-
-    private String primaryKey;
-
-    private String diffType;
-
-    public KeyDiff(String primaryKey, String diffType) {
-        this.primaryKey = primaryKey;
-        this.diffType = diffType;
-    }
-
-    public String getPrimaryKey() {
-        return primaryKey;
-    }
-
-    public String getDiffType() {
-        return diffType;
-    }
-}
