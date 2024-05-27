@@ -4,12 +4,12 @@
 
 .arm_brm_container {
     -fx-background-color: #da6464;
-    -fx-background-radius: 15px;
+    -fx-background-radius: 7px;
 }
 
 .abrmm_container {
     -fx-background-color: #888888;
-    -fx-background-radius: 15px;
+    -fx-background-radius: 7px;
 }
 
 .normal_container {
@@ -17,6 +17,7 @@
 }
 
 /* For table view styling refer : https://edencoding.com/style-tableview-javafx/ */
+/*TODO Check inherit functions i.e hovering rules for diff rows */
 
 .table-view {
     -fx-background-color: transparent;
