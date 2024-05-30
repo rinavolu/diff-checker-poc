@@ -122,7 +122,6 @@ public class DCDatabaseController implements Initializable {
         }
 
         return areCredentialsValid;
-
     }
 
 
