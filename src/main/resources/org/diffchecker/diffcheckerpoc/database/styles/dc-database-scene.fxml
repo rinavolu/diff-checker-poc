@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox fx:id="root_hbox" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="root_hbox" stylesheets="@dc-database.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.diffchecker.diffcheckerpoc.controllers.database.newdiff.DCDatabaseController">
+   <VBox fx:id="alpha_vbox" maxWidth="1000.0" prefHeight="200.0" prefWidth="380.0" styleClass="alpha_vbox" />
+   <VBox fx:id="middle_vbox" maxWidth="150.0" prefHeight="200.0" prefWidth="100.0" styleClass="middle_vbox" />
+   <VBox fx:id="beta_vbox" maxWidth="1000.0" prefHeight="200.0" prefWidth="380.0" styleClass="beta_vbox" />
+</HBox>

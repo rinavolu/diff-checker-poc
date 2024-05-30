@@ -1,0 +1,23 @@
+.alpha_vbox {
+    -fx-background-color: #b0bfd9;
+    /*-fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;*/
+}
+
+.beta_vbox {
+    -fx-background-color: #d5d9b0;
+    /*-fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;*/
+}
+
+.middle_vbox {
+    -fx-background-color: white;
+}
+
+.root_hbox{
+    -fx-background-color: gray;
+}
+
+.mfx-button{
+    -fx-background-color: #749ee3;
+}

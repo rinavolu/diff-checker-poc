@@ -17,13 +17,17 @@ module org.diffchecker2.diffcheckerpoc {
     requires java.sql;
     requires org.postgresql.jdbc;
     requires org.apache.commons.dbutils;
+    requires MaterialFX;
+    requires com.dlsc.gemsfx;
 
 
     opens org.diffchecker.diffcheckerpoc to javafx.fxml;
     exports org.diffchecker.diffcheckerpoc;
+    exports org.diffchecker.diffcheckerpoc.controllers.database.newdiff;
     exports org.diffchecker.diffcheckerpoc.controllers;
     exports org.diffchecker.diffcheckerpoc.controllers.directory;
     exports org.diffchecker.diffcheckerpoc.controllers.api;
     exports org.diffchecker.diffcheckerpoc.controllers.database;
     opens org.diffchecker.diffcheckerpoc.controllers to javafx.fxml;
+    exports org.diffchecker.diffcheckerpoc.controllers.database.newdiff.model;
 }
