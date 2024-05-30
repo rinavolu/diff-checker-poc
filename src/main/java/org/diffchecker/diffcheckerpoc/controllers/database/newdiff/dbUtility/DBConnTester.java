@@ -21,7 +21,8 @@ public class DBConnTester {
             connectionStatus.setException(e.getMessage());
         } finally {
             try{ if (conn != null) conn.close();
-                System.out.println("Database Connection Closed"); } catch(SQLException e) {
+                //System.out.println("Database Connection Closed");
+            } catch(SQLException e) {
                 System.out.println("Unable to close connection");
             }
         }

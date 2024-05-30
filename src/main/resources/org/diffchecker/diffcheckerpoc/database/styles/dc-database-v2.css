@@ -1,0 +1,11 @@
+.alpha_vbox {
+    -fx-background-color: #b0bfd9;
+    /*-fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;*/
+}
+
+.beta_vbox {
+    -fx-background-color: #d5d9b0;
+    /*-fx-border-radius: 10 10 10 10;
+    -fx-background-radius: 10 10 10 10;*/
+}
